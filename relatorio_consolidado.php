@@ -1,30 +1,13 @@
 <?php
+// Inclui a nova estrutura centralizada
+require_once __DIR__ . '/core/LojaConfig.php';
+require_once __DIR__ . '/core/PdoLoader.php';
+
 // =========================
 // CONFIGURAÇÃO DAS LOJAS
 // =========================
-$lojas = [
-    'sapezal' => [
-        'host'    => '45.187.75.249',
-        'dbname'  => 'Myouro',
-        'user'    => 'root',
-        'pass'    => 'lad013109a',
-        'codloja' => 8,
-    ],
-    'pbcentro' => [
-        'host'    => 'mbpimenta.ddns.net',
-        'dbname'  => 'Myouro',
-        'user'    => 'root',
-        'pass'    => 'lad013113z',
-        'codloja' => 10,
-    ],
-    'alvorada' => [
-        'host'    => '177.222.211.245',
-        'dbname'  => 'Myouro',
-        'user'    => 'root',
-        'pass'    => 'jab012257g',
-        'codloja' => 1,
-    ],
-];
+// A função getLojas() agora vem do LojaConfig.php
+$lojas = LojaConfig::getLojas();
 
 // =========================
 // PERÍODO
@@ -42,21 +25,12 @@ $vendedores      = [];  // consolidado de vendedores
 $classes         = [];  // consolidado de classes
 
 // =========================
-// FUNÇÃO DE CONEXÃO
-// =========================
-function conecta($cfg) {
-    $dsn = "mysql:host={$cfg['host']};dbname={$cfg['dbname']};charset=utf8";
-    $pdo = new PDO($dsn, $cfg['user'], $cfg['pass']);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    return $pdo;
-}
-
-// =========================
 // LOOP NAS LOJAS
 // =========================
 foreach ($lojas as $nomeLoja => $cfg) {
     try {
-        $pdo = conecta($cfg);
+        // A função PdoLoader::conecta() agora é usada para obter a conexão
+        $pdo = PdoLoader::conecta($nomeLoja);
 
         // =========================
         // 1) VENDAS POR CLASSE (base pra tudo)
@@ -153,26 +127,21 @@ foreach ($lojas as $nomeLoja => $cfg) {
             $custo     = (float)$v['soma_custo_medio'];
             $quant     = (float)$v['soma_quant'];
 
-            // descontar devolução
             if (isset($devPorClasse[$codClasse])) {
                 $bruto   -= (float)$devPorClasse[$codClasse]['devoluc_bruto'];
                 $liquido -= (float)$devPorClasse[$codClasse]['devoluc_liquido'];
                 $custo   -= (float)$devPorClasse[$codClasse]['custo_devoluc'];
             }
-            // descontar estorno
             if (isset($estPorClasse[$codClasse])) {
                 $bruto   -= (float)$estPorClasse[$codClasse]['est_bruto'];
                 $liquido -= (float)$estPorClasse[$codClasse]['est_liquido'];
                 $custo   -= (float)$estPorClasse[$codClasse]['est_custo'];
             }
 
-            // soma para o total da loja
             $vendaBrutaLoja   += $bruto;
             $vendaLiquidaLoja += $liquido;
             $custoLoja        += $custo;
 
-            // ====== CONSOLIDAR CLASSE ======
-            // chaveia pela classe pra somar de todas as lojas
             $chaveClasse = $codClasse . '|' . $nomeClasse;
             if (!isset($classes[$chaveClasse])) {
                 $classes[$chaveClasse] = [
@@ -200,6 +169,7 @@ foreach ($lojas as $nomeLoja => $cfg) {
             'cmv'           => $custoLoja,
             'lucro'         => $lucro,
             'atendimentos'  => $atendimentos,
+            'erro'          => null,
         ];
 
         // =========================
@@ -223,7 +193,6 @@ foreach ($lojas as $nomeLoja => $cfg) {
         $stVendVendedor->execute([$datainicio, $datafim, $cfg['codloja'], $status_venda]);
         $vendasVendedor = $stVendVendedor->fetchAll(PDO::FETCH_ASSOC);
 
-        // devoluções por vendedor
         $sqlDevVend = "
             SELECT
                 d.CODVEND AS codvend,
@@ -292,6 +261,7 @@ $total = [
     'atendimentos'  => 0,
 ];
 foreach ($resultados_loja as $r) {
+    if (isset($r['erro']) && $r['erro'] !== null) continue;
     $total['venda_bruta']   += $r['venda_bruta'];
     $total['venda_liquida'] += $r['venda_liquida'];
     $total['descontos']     += $r['descontos'];
@@ -320,10 +290,11 @@ usort($classes, function($a, $b) {
         th, td { border:1px solid #ccc; padding:6px 10px; text-align:right; }
         th:first-child, td:first-child { text-align:left; }
         h2 { margin-top: 30px; }
+        .error { color: red; font-size: 0.8em; }
     </style>
 </head>
 <body>
- <h2>Consolidado por loja (<?= htmlspecialchars($datainicio) ?> até <?= htmlspecialchars($datafim) ?>)</h2>
+ <h2>Consolidado por loja (<?= htmlspecialchars(date('d/m/Y H:i:s', strtotime($datainicio))) ?> até <?= htmlspecialchars(date('d/m/Y H:i:s', strtotime($datafim))) ?>)</h2>
 <table>
     <tr>
         <th>Loja</th>
@@ -335,6 +306,7 @@ usort($classes, function($a, $b) {
         <th>Lucro</th>
         <th>Lucro %</th>
         <th>Atendimentos</th>
+        <th>Status</th>
     </tr>
     <?php foreach ($resultados_loja as $loja => $r): 
         $vendaLiq = $r['venda_liquida'];
@@ -354,11 +326,11 @@ usort($classes, function($a, $b) {
         <td><?= number_format($lucro, 2, ',', '.') ?></td>
         <td><?= number_format($lucroPercent, 2, ',', '.') ?>%</td>
         <td><?= (int)$r['atendimentos'] ?></td>
+        <td class="error"><?= isset($r['erro']) ? htmlspecialchars($r['erro']) : 'OK' ?></td>
     </tr>
     <?php endforeach; ?>
 
     <?php
-        // calcula também os percentuais do total
         $vendaLiqTot = $total['venda_liquida'];
         $custoTot    = $total['cmv'];
         $lucroTot    = $total['lucro'];
@@ -366,7 +338,7 @@ usort($classes, function($a, $b) {
         $cmvPercentTot   = $vendaLiqTot > 0 ? ($custoTot / $vendaLiqTot) * 100 : 0;
         $lucroPercentTot = $vendaLiqTot > 0 ? ($lucroTot / $vendaLiqTot) * 100 : 0;
     ?>
-    <tr>
+    <tr style="font-weight:bold">
         <th>Total</th>
         <th><?= number_format($total['venda_bruta'], 2, ',', '.') ?></th>
         <th><?= number_format($vendaLiqTot, 2, ',', '.') ?></th>
@@ -376,6 +348,7 @@ usort($classes, function($a, $b) {
         <th><?= number_format($lucroTot, 2, ',', '.') ?></th>
         <th><?= number_format($lucroPercentTot, 2, ',', '.') ?>%</th>
         <th><?= (int)$total['atendimentos'] ?></th>
+        <th>-</th>
     </tr>
 </table>
 
@@ -420,7 +393,6 @@ usort($classes, function($a, $b) {
         $custo       = $cls['custo'];
         $lucroClasse = $vendaLiq - $custo;
 
-        // evita divisão por zero
         $cmvPercent   = $vendaLiq > 0 ? ($custo / $vendaLiq) * 100 : 0;
         $lucroPercent = $vendaLiq > 0 ? ($lucroClasse / $vendaLiq) * 100 : 0;
     ?>
