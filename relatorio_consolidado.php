@@ -7,7 +7,7 @@ require_once __DIR__ . '/core/PdoLoader.php';
 // CONFIGURAÇÃO DAS LOJAS
 // =========================
 // A função getLojas() agora vem do LojaConfig.php
-$lojas = LojaConfig::getLojas();
+$lojas = LojaConfig::all();
 
 // =========================
 // PERÍODO
