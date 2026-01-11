@@ -61,10 +61,10 @@ if ($endpoint === 'totais') {
             // 1. Cálculos de Vendas, Estornos, CMV
             $sqlBase = "
                 SELECT
-                    SUM(IIF(v.STATUS = :status_venda, vp.VALORBRUTO, 0)) as venda_bruta_total,
-                    SUM(IIF(v.STATUS = :status_venda, vp.VALORPRODUTO, 0)) as venda_liquida_total,
-                    SUM(IIF(v.STATUS = :status_venda, vp.CUSTOMEDIO, 0)) as cmv_total,
-                    SUM(IIF(v.STATUS = :status_estorno, vp.VALORPRODUTO, 0)) as estorno_liquido_total
+                    SUM(IF(v.STATUS = :status_venda, vp.VALORBRUTO, 0)) as venda_bruta_total,
+                    SUM(IF(v.STATUS = :status_venda, vp.VALORPRODUTO, 0)) as venda_liquida_total,
+                    SUM(IF(v.STATUS = :status_venda, vp.CUSTOMEDIO, 0)) as cmv_total,
+                    SUM(IF(v.STATUS = :status_estorno, vp.VALORPRODUTO, 0)) as estorno_liquido_total
                 FROM vendaprodutos vp
                 JOIN venda v ON vp.IDVENDA = v.IDVENDA
                 WHERE vp.DATAHORAVENDA BETWEEN :datainicio AND :datafim AND v.CODLOJA = :codloja AND v.STATUS IN (:status_venda, :status_estorno)
