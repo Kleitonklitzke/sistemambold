@@ -6,14 +6,16 @@ require_once __DIR__ . '/core/PdoLoader.php';
 // =========================
 // CONFIGURAÇÃO DAS LOJAS
 // =========================
-// A função getLojas() agora vem do LojaConfig.php
 $lojas = LojaConfig::all();
 
 // =========================
 // PERÍODO
 // =========================
-$datainicio = date('Y-m-d 00:00:00');
-$datafim    = date('Y-m-d 23:59:59');
+// Verifica se uma data foi passada via GET, senão usa a data de hoje.
+$dataBase = isset($_GET['data']) && !empty($_GET['data']) ? $_GET['data'] : date('Y-m-d');
+$datainicio = $dataBase . ' 00:00:00';
+$datafim    = $dataBase . ' 23:59:59';
+
 $status_venda   = 'F';
 $status_estorno = 'C';
 
@@ -52,7 +54,7 @@ foreach ($lojas as $nomeLoja => $cfg) {
             WHERE vp.DATAHORAVENDA BETWEEN ? AND ?
               AND v.CODLOJA = ?
               AND v.STATUS = ?
-            GROUP BY p.CODCLASSE
+            GROUP BY p.CODCLASSE, c.NOMECLASS
         ";
         $stVendas = $pdo->prepare($sqlVendas);
         $stVendas->execute([$datainicio, $datafim, $cfg['codloja'], $status_venda]);
