@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION[\'usuario\'])) {
-    header(\'Location: login.php\');
+if (!isset($_SESSION['usuario'])) {
+    header('Location: login.php');
     exit;
 }
 ?>
@@ -68,28 +68,20 @@ if (!isset($_SESSION[\'usuario\'])) {
     .loja-check{ display:flex; align-items:center; gap:6px; background:#fff; padding:4px 8px; border-radius:8px; border:1px solid #e6e8eb; box-shadow:var(--shadow); font-size:.85rem; }
     .loja-check input{ transform:translateY(1px); }
 
-    /* CARDS */
-    .cards{ display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
-    .card{ background:#fff; padding:12px 16px; border-radius:10px; box-shadow:var(--shadow); min-width:210px; flex:1 1 160px; }
-    .card small{ display:block; color:#777; margin-bottom:4px; }
-    .card strong{ font-size:1.1rem; }
-
     /* ORÇAMENTO (dotação / consumo) */
     .orcamento-section{ margin-bottom:20px; }
     .orcamento-wrap{ background:#fff; padding:12px 16px; border-radius:10px; box-shadow:var(--shadow); }
+    .orcamento-wrap h3 { margin: 4px 0 12px 0; font-size: 1.1rem; }
     .orcamento-grid{ display:grid; grid-template-columns: 260px 1fr; gap:14px; align-items:stretch; }
-    @media (max-width: 900px){
-      .orcamento-grid{ grid-template-columns:1fr; }
-    }
+    @media (max-width: 900px){ .orcamento-grid{ grid-template-columns:1fr; } }
     .gauge-box{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:1px solid #eee; border-radius:10px; padding:10px; }
     .gauge-percent{ font-size:1.6rem; font-weight:700; }
     .gauge-sub{ font-size:.85rem; color:#666; }
     .orc-table{ width:100%; border-collapse:collapse; font-size:.85rem; }
     .orc-table th, .orc-table td{ padding:8px 10px; border-bottom:1px solid #eee; white-space:nowrap; }
-    .orc-table th{ text-align:left; background:#f7f7f7; }
+    .orc-table th{ text-align:left; font-weight: 600; background:#f7f7f7; }
     .orc-table td{ text-align:right; }
-    .orc-table td:first-child{ text-align:left; }
-    .util-pill{ display:inline-block; padding:3px 8px; border-radius:9999px; font-weight:700; }
+    .util-pill{ display:inline-block; padding:3px 8px; border-radius:9999px; font-weight:700; font-size: 0.8rem; }
     .util-ok{ background:#e8f5e9; color:#2e7d32; }
     .util-mid{ background:#fff8e1; color:#ef6c00; }
     .util-high{ background:#ffebee; color:#c62828; }
@@ -99,23 +91,12 @@ if (!isset($_SESSION[\'usuario\'])) {
     table{ width:100%; border-collapse:collapse; background:#fff; border-radius:10px; box-shadow:var(--shadow); margin-bottom:20px; font-size:.85rem; }
     th,td{ padding:8px 10px; border-bottom:1px solid #eee; text-align:right; white-space:nowrap; }
     th:first-child, td:first-child{ text-align:left; }
-    th{ background:#f7f7f7; } tfoot th{ background:#eaeaea; }
+    th{ background:#f7f7f7; } tfoot th{ background:#eaeaea; font-weight: 700; }
 
     .col-lucro,.col-lucro-pct{ color:var(--verde); font-weight:600; }
     .col-desconto,.col-desconto-pct{ color:var(--vermelho); font-weight:600; }
     .col-cmv,.col-cmv-pct{ color:var(--laranja); font-weight:600; }
     .col-vl{ color:#1565c0; font-weight:600; }
-
-    /* GRÁFICOS */
-    .charts-row, .charts-row-wide{ display:flex; gap:15px; flex-wrap:wrap; margin-top:15px; }
-    .chart-box, .chart-wide{ background:#fff; border-radius:10px; box-shadow:var(--shadow); padding:8px; flex:1 1 210px; min-width:240px; }
-    .chart-wide{ min-width:320px; }
-    .chart-box h4, .chart-wide h4{ margin:4px 0 6px; font-size:.85rem; }
-    .chart-box canvas{ height:140px !important; }
-    .chart-wide canvas{ height:230px !important; }
-
-    .block-table{ margin-top:15px; }
-    .block-table h3{ margin:5px 0; }
 
     @media (max-width:768px){
       body{ padding:12px; }
@@ -130,7 +111,7 @@ if (!isset($_SESSION[\'usuario\'])) {
     <div class="topbar-right">
       <img src="images/logocombempopular.png" alt="Logo" class="logo">
       <div class="user-box">
-        <span>Olá, <?php echo htmlspecialchars($_SESSION[\'usuario\']); ?></span>
+        <span>Olá, <?php echo htmlspecialchars($_SESSION['usuario']); ?></span>
         <a class="logout-btn" href="logout.php">Sair</a>
       </div>
     </div>
@@ -141,18 +122,11 @@ if (!isset($_SESSION[\'usuario\'])) {
   <div class="filters">
     <form id="formData" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
       <label>Data: <input type="date" id="dataBusca" name="dataBusca" /></label>
-      <label>Período:
-        <select id="filtroPeriodo">
-          <option value="dia">Dia</option>
-          <option value="mes">Mês</option>
-        </select>
-      </label>
       <button type="submit">Buscar</button>
     </form>
     <div class="lojas-group" id="lojasGroup"></div>
   </div>
 
-  <div class="cards" id="cards"></div>
   <div id="orcamento-section" class="orcamento-section"></div>
 
   <h2>Vendas do dia</h2>
@@ -174,31 +148,21 @@ if (!isset($_SESSION[\'usuario\'])) {
     <table id="tabela-mes">
       <thead>
         <tr>
-          <th>Loja</th> <th>VB mês</th> <th>VL mês</th> <th>Prev. venda</th> <th>Prev. lucro</th>
-          <th>Prev. lucro (%)</th> <th>Lucro (%)</th> <th>Lucro (R$)</th> <th>CMV (R$)</th> <th>CMV (%)</th>
-          <th>Atend.</th> <th>Ticket</th> <th>Desc. (R$)</th> <th>Desc. (%)</th> <th>Devoluções</th> <th>Estornos</th>
+          <th>Loja</th> <th>Venda Bruta</th> <th>Venda Líquida</th> <th>% Lucro</th> <th>Lucro</th>
+          <th>CMV (R$)</th> <th>% CMV</th> <th>Atend.</th> <th>Ticket</th> <th>% Desconto</th>
+          <th>Descontos</th> <th>Estornos</th> <th>Devoluções</th>
         </tr>
       </thead>
       <tbody></tbody> <tfoot></tfoot>
     </table>
   </div>
 
-  <div class="charts-row">
-    <div class="chart-box"><h4>Venda Líquida</h4><canvas id="graf-venda"></canvas></div>
-    <div class="chart-box"><h4>Lucro %</h4><canvas id="graf-lucro-pct"></canvas></div>
-    <div class="chart-box"><h4>Ticket médio</h4><canvas id="graf-ticket"></canvas></div>
-    <div class="chart-box"><h4>Atendimentos</h4><canvas id="graf-atend"></canvas></div>
-  </div>
-  
-  <h2 style="margin-top:20px;">Detalhes da Loja (em desenvolvimento)</h2>
-  <div id="areaDetalhes"></div>
-
 <script>
     // ---------- CONFIGURAÇÕES GLOBAIS ----------
     const LOJAS = [
-      { id: \'sapezal\',  label: \'Sapezal\' },
-      { id: \'pbcentro\', label: \'Pimenta\' },
-      { id: \'alvorada\', label: \'Alvorada\' }
+      { id: 'sapezal',  label: 'Sapezal' },
+      { id: 'pbcentro', label: 'Pimenta' },
+      { id: 'alvorada', label: 'Alvorada' }
     ];
     const PCT_DECIMALS = 2;
     const MONEY_DECIMALS = 2;
@@ -212,31 +176,29 @@ if (!isset($_SESSION[\'usuario\'])) {
 
     // ---------- ELEMENTOS DA DOM ----------
     const UIElements = {
-        lojasGroup: document.getElementById(\'lojasGroup\'),
-        statusBar: document.getElementById(\'status-lojas\'),
-        inputData: document.getElementById(\'dataBusca\'),
-        selectPeriodo: document.getElementById(\'filtroPeriodo\'),
-        form: document.getElementById(\'formData\'),
-        cards: document.getElementById(\'cards\'),
-        orcamentoSection: document.getElementById(\'orcamento-section\'),
+        lojasGroup: document.getElementById('lojasGroup'),
+        statusBar: document.getElementById('status-lojas'),
+        inputData: document.getElementById('dataBusca'),
+        form: document.getElementById('formData'),
+        orcamentoSection: document.getElementById('orcamento-section'),
         tabelaDia: {
-            tbody: document.querySelector(\'#tabela-dia tbody\'),
-            tfoot: document.querySelector(\'#tabela-dia tfoot\')
+            tbody: document.querySelector('#tabela-dia tbody'),
+            tfoot: document.querySelector('#tabela-dia tfoot')
         },
         tabelaMes: {
-            tbody: document.querySelector(\'#tabela-mes tbody\'),
-            tfoot: document.querySelector(\'#tabela-mes tfoot\')
+            tbody: document.querySelector('#tabela-mes tbody'),
+            tfoot: document.querySelector('#tabela-mes tfoot')
         }
     };
 
     // ---------- FORMATAÇÃO E HELPERS ----------
     const fmt = {
         pct: (v) => `${Number(v || 0).toFixed(PCT_DECIMALS)}%`,
-        money: (v) => Number(v || 0).toLocaleString(\'pt-BR\', { minimumFractionDigits: MONEY_DECIMALS, maximumFractionDigits: MONEY_DECIMALS })
+        money: (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: MONEY_DECIMALS, maximumFractionDigits: MONEY_DECIMALS })
     };
     const getLojaLabel = (id) => (LOJAS.find(l => l.id === id) || { label: id }).label;
-    const hojeLocalISO = () => new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split(\'T\')[0];
-    const getSelectedLojas = () => Array.from(document.querySelectorAll(\'.lojaSel:checked\')).map(c => c.dataset.id);
+    const hojeLocalISO = () => new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const getSelectedLojas = () => Array.from(document.querySelectorAll('.lojaSel:checked')).map(c => c.dataset.id);
     
     // ---------- LÓGICA DE DADOS (API) ----------
     function abortarBuscasAtuais() {
@@ -252,16 +214,22 @@ if (!isset($_SESSION[\'usuario\'])) {
                 console.error(`Erro na API (${response.status}):`, errorText.slice(0, 500));
                 return null;
             }
-            // Robusto: tenta parsear mesmo com lixo antes/depois do JSON
             const text = await response.text();
-            const jsonMatch = text.match(/(\\[|{).*(\\
-\]|})/);
-            if(jsonMatch) return JSON.parse(jsonMatch[0]);
-
-            return JSON.parse(text); // Fallback para JSON limpo
+            try {
+                // Tenta parsear o JSON de forma robusta, ignorando potenciais avisos do PHP
+                const jsonMatch = text.match(/(\[|{).*(\]|})/s);
+                if (jsonMatch && jsonMatch[0]) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+                return JSON.parse(text); // Fallback
+            } catch (e) {
+                console.error("Erro ao parsear JSON:", e);
+                console.log("Texto recebido:", text);
+                return null;
+            }
         } catch (error) {
-            if (error.name !== \'AbortError\') {
-                console.error(\'Falha na requisição:\', error);
+            if (error.name !== 'AbortError') {
+                console.error('Falha na requisição:', error);
             }
             return null;
         }
@@ -278,27 +246,30 @@ if (!isset($_SESSION[\'usuario\'])) {
                 <label class="loja-check">
                     <input type="checkbox" class="lojaSel" data-id="${l.id}" checked />
                     <span>${l.label}</span>
-                </label>`).join(\'\')}
+                </label>`).join('')}
         `;
 
-        document.getElementById(\'todasLojas\').addEventListener(\'change\', (e) => {
-            document.querySelectorAll(\'.lojaSel\').forEach(c => c.checked = e.target.checked);
+        const chkTodas = document.getElementById('todasLojas');
+        const chkLojas = document.querySelectorAll('.lojaSel');
+
+        chkTodas.addEventListener('change', (e) => {
+            chkLojas.forEach(c => c.checked = e.target.checked);
             iniciarCarregamento();
         });
 
-        document.querySelectorAll(\'.lojaSel\').forEach(c => {
-            c.addEventListener(\'change\', () => {
-                document.getElementById(\'todasLojas\').checked = document.querySelectorAll(\'.lojaSel:checked\').length === LOJAS.length;
+        chkLojas.forEach(c => {
+            c.addEventListener('change', () => {
+                chkTodas.checked = document.querySelectorAll('.lojaSel:checked').length === LOJAS.length;
                 iniciarCarregamento();
             });
         });
     }
 
-    function setStatusLoja(id, estado, msg = \'\') {
+    function setStatusLoja(id, estado, msg = '') {
         const rotulo = getLojaLabel(id);
         let pill = UIElements.statusBar.querySelector(`[data-loja="${id}"]`);
         if (!pill) {
-            pill = document.createElement(\'div\');
+            pill = document.createElement('div');
             pill.dataset.loja = id;
             UIElements.statusBar.appendChild(pill);
         }
@@ -306,77 +277,135 @@ if (!isset($_SESSION[\'usuario\'])) {
         pill.innerHTML = `<span>${rotulo}</span><span>${msg || estado.charAt(0).toUpperCase() + estado.slice(1)}</span>`;
     }
 
-    function renderizarTabela(tbody, tfoot, dados, tipo) {
-        tbody.innerHTML = \'\';
-        tfoot.innerHTML = \'\';
+    function renderizarTabela(tbody, tfoot, dados) {
+        tbody.innerHTML = '';
+        tfoot.innerHTML = '';
         if (!dados || dados.length === 0) return;
 
-        let totalBruta = 0, totalLiquida = 0, totalLucro = 0, totalCmv = 0, totalAtend = 0, totalDesc = 0, totalEst = 0, totalDev = 0;
+        const totais = dados.reduce((acc, d) => {
+            acc.venda_bruta += d.venda_bruta;
+            acc.venda_liquida += d.venda_liquida;
+            acc.lucro += d.lucro;
+            acc.cmv += d.cmv;
+            acc.atendimentos += d.atendimentos;
+            acc.descontos += d.descontos;
+            acc.estornos += d.estornos;
+            acc.devolucoes += d.devolucoes;
+            return acc;
+        }, { venda_bruta: 0, venda_liquida: 0, lucro: 0, cmv: 0, atendimentos: 0, descontos: 0, estornos: 0, devolucoes: 0 });
 
         dados.forEach(d => {
-            const { venda_bruta, venda_liquida, descontos, cmv, lucro, atendimentos, estornos, devolucoes } = d;
-            totalBruta += venda_bruta; totalLiquida += venda_liquida; totalLucro += lucro; totalCmv += cmv;
-            totalAtend += atendimentos; totalDesc += descontos; totalEst += estornos; totalDev += devolucoes;
-            
-            const percLucro = venda_liquida > 0 ? (lucro / venda_liquida) * 100 : 0;
-            const percCmv = venda_liquida > 0 ? (cmv / venda_liquida) * 100 : 0;
-            const percDesc = venda_bruta > 0 ? (descontos / venda_bruta) * 100 : 0;
-            const ticket = atendimentos > 0 ? (venda_liquida / atendimentos) : 0;
+            const percLucro = d.venda_liquida > 0 ? (d.lucro / d.venda_liquida) * 100 : 0;
+            const percCmv = d.venda_liquida > 0 ? (d.cmv / d.venda_liquida) * 100 : 0;
+            const percDesc = d.venda_bruta > 0 ? (d.descontos / d.venda_bruta) * 100 : 0;
+            const ticket = d.atendimentos > 0 ? (d.venda_liquida / d.atendimentos) : 0;
 
             const tr = tbody.insertRow();
             tr.innerHTML = `
                 <td>${getLojaLabel(d.loja)}</td>
-                <td>${fmt.money(venda_bruta)}</td>
-                <td class="col-vl">${fmt.money(venda_liquida)}</td>
+                <td>${fmt.money(d.venda_bruta)}</td>
+                <td class="col-vl">${fmt.money(d.venda_liquida)}</td>
                 <td class="col-lucro-pct">${fmt.pct(percLucro)}</td>
-                <td class="col-lucro">${fmt.money(lucro)}</td>
-                <td class="col-cmv">${fmt.money(cmv)}</td>
+                <td class="col-lucro">${fmt.money(d.lucro)}</td>
+                <td class="col-cmv">${fmt.money(d.cmv)}</td>
                 <td class="col-cmv-pct">${fmt.pct(percCmv)}</td>
-                <td>${atendimentos}</td>
+                <td>${d.atendimentos}</td>
                 <td>${fmt.money(ticket)}</td>
                 <td class="col-desconto-pct">${fmt.pct(percDesc)}</td>
-                <td class="col-desconto">${fmt.money(descontos)}</td>
-                <td>${fmt.money(estornos)}</td>
-                <td>${fmt.money(devolucoes)}</td>
+                <td class="col-desconto">${fmt.money(d.descontos)}</td>
+                <td>${fmt.money(d.estornos)}</td>
+                <td>${fmt.money(d.devolucoes)}</td>
             `;
         });
         
-        // Rodapé com totais
-        const totPercLucro = totalLiquida > 0 ? (totalLucro / totalLiquida) * 100 : 0;
-        const totPercCmv = totalLiquida > 0 ? (totalCmv / totalLiquida) * 100 : 0;
-        const totTicket = totalAtend > 0 ? (totalLiquida / totalAtend) : 0;
-        const totPercDesc = totalBruta > 0 ? (totalDesc / totalBruta) * 100 : 0;
+        const totPercLucro = totais.venda_liquida > 0 ? (totais.lucro / totais.venda_liquida) * 100 : 0;
+        const totPercCmv = totais.venda_liquida > 0 ? (totais.cmv / totais.venda_liquida) * 100 : 0;
+        const totTicket = totais.atendimentos > 0 ? (totais.venda_liquida / totais.atendimentos) : 0;
+        const totPercDesc = totais.venda_bruta > 0 ? (totais.descontos / totais.venda_bruta) * 100 : 0;
 
         tfoot.innerHTML = `
             <tr>
                 <th>Total</th>
-                <th>${fmt.money(totalBruta)}</th>
-                <th class="col-vl">${fmt.money(totalLiquida)}</th>
+                <th>${fmt.money(totais.venda_bruta)}</th>
+                <th class="col-vl">${fmt.money(totais.venda_liquida)}</th>
                 <th class="col-lucro-pct">${fmt.pct(totPercLucro)}</th>
-                <th class="col-lucro">${fmt.money(totalLucro)}</th>
-                <th class="col-cmv">${fmt.money(totalCmv)}</th>
+                <th class="col-lucro">${fmt.money(totais.lucro)}</th>
+                <th class="col-cmv">${fmt.money(totais.cmv)}</th>
                 <th class="col-cmv-pct">${fmt.pct(totPercCmv)}</th>
-                <th>${totalAtend}</th>
+                <th>${totais.atendimentos}</th>
                 <th>${fmt.money(totTicket)}</th>
                 <th class="col-desconto-pct">${fmt.pct(totPercDesc)}</th>
-                <th class="col-desconto">${fmt.money(totalDesc)}</th>
-                <th>${fmt.money(totalEst)}</th>
-                <th>${fmt.money(totalDev)}</th>
+                <th class="col-desconto">${fmt.money(totais.descontos)}</th>
+                <th>${fmt.money(totais.estornos)}</th>
+                <th>${fmt.money(totais.devolucoes)}</th>
             </tr>
         `;
     }
     
-    function renderizarPainel() {
-        const periodo = UIElements.selectPeriodo.value;
-        const fontePrincipal = (periodo === \'dia\') ? dadosDia : dadosMes;
+    function renderizarOrcamento() {
+        const container = UIElements.orcamentoSection;
+        container.innerHTML = ''; 
 
-        renderizarTabela(UIElements.tabelaDia.tbody, UIElements.tabelaDia.tfoot, dadosDia, \'dia\');
-        renderizarTabela(UIElements.tabelaMes.tbody, UIElements.tabelaMes.tfoot, dadosMes, \'mes\');
+        if (!orcamentoData || !orcamentoData.consolidado) return;
+
+        const {
+            dotacao_total,
+            consumido_total,
+            saldo_total,
+            percentual_consumido,
+            dias_uteis_corridos_percentual
+        } = orcamentoData.consolidado;
+
+        let gaugeColorClass = 'util-ok';
+        // Tolerância de 5% acima do esperado para os dias úteis
+        if (percentual_consumido > dias_uteis_corridos_percentual + 5) {
+            gaugeColorClass = 'util-high';
+        } else if (percentual_consumido > dias_uteis_corridos_percentual) {
+            gaugeColorClass = 'util-mid';
+        }
+
+        const html = `
+            <div class="orcamento-wrap">
+                <h3>Orçamento Consolidado (GMD)</h3>
+                <div class="orcamento-grid">
+                    <div class="gauge-box">
+                        <div class="gauge-percent ${gaugeColorClass}">${fmt.pct(percentual_consumido)}</div>
+                        <div class="gauge-sub">Consumido</div>
+                        <small>Ideal dias úteis: ${fmt.pct(dias_uteis_corridos_percentual)}</small>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="orc-table">
+                            <tbody>
+                                <tr>
+                                    <th>Dotação Total</th>
+                                    <td>${fmt.money(dotacao_total)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Consumido Total</th>
+                                    <td>${fmt.money(consumido_total)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Saldo</th>
+                                    <td class="${(saldo_total < 0) ? 'util-high' : ''}">${fmt.money(saldo_total)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML = html;
+    }
+
+    function renderizarTudo() {
+        renderizarTabela(UIElements.tabelaDia.tbody, UIElements.tabelaDia.tfoot, dadosDia);
+        renderizarTabela(UIElements.tabelaMes.tbody, UIElements.tabelaMes.tfoot, dadosMes);
+        renderizarOrcamento();
     }
 
     function scheduleRender() {
         if (renderTimer) cancelAnimationFrame(renderTimer);
-        renderTimer = requestAnimationFrame(renderizarPainel);
+        renderTimer = requestAnimationFrame(renderizarTudo);
     }
     
     // ---------- FUNÇÃO PRINCIPAL DE CARREGAMENTO ----------
@@ -387,18 +416,19 @@ if (!isset($_SESSION[\'usuario\'])) {
         const data = UIElements.inputData.value;
         const mes = data.slice(0, 7);
         
-        // Reset UI
-        UIElements.statusBar.innerHTML = \'\';
+        UIElements.statusBar.innerHTML = '';
         if (lojasSelecionadas.length === 0) {
-            renderizarPainel(); // Limpa as tabelas
+            dadosDia = []; dadosMes = []; orcamentoData = null;
+            scheduleRender();
             return;
         }
-        lojasSelecionadas.forEach(id => setStatusLoja(id, \'loading\', \'Carregando...\'));
+        
+        lojasSelecionadas.forEach(id => setStatusLoja(id, 'loading', 'Carregando...'));
 
         const ctrl = new AbortController();
         controllersAtivos.push(ctrl);
 
-        const lojasParam = lojasSelecionadas.join(\',\');
+        const lojasParam = lojasSelecionadas.join(',');
         
         const promessas = [
             fetchJson(`api.php?endpoint=totais&periodo=dia&data=${data}&lojas=${lojasParam}`, ctrl.signal),
@@ -408,40 +438,34 @@ if (!isset($_SESSION[\'usuario\'])) {
         
         const [resDia, resMes, resOrc] = await Promise.all(promessas);
 
-        // Processa resultados "Totais" (Dia e Mês)
         dadosDia = resDia || [];
         dadosMes = resMes || [];
-        
-        // Atualiza status com base na resposta (apenas do dia, que é mais crítico)
-        const lojasProcessadas = new Set();
+        orcamentoData = resOrc || null;
+
+        const lojasRespondidas = new Set();
         (resDia || []).forEach(d => {
-            setStatusLoja(d.loja, d.status === \'ok\' ? \'ok\' : \'erro\', d.status === \'ok\' ? \'OK\' : d.mensagem);
-            lojasProcessadas.add(d.loja);
+            setStatusLoja(d.loja, d.status === 'ok' ? 'ok' : 'erro', d.status === 'ok' ? 'OK' : (d.mensagem || 'Erro'));
+            lojasRespondidas.add(d.loja);
         });
-        // Marca como erro lojas que não retornaram na API
+
         lojasSelecionadas.forEach(id => {
-            if (!lojasProcessadas.has(id)) {
-                setStatusLoja(id, \'erro\', \'Sem resposta\');
+            if (!lojasRespondidas.has(id)) {
+                setStatusLoja(id, 'erro', 'Sem resposta');
             }
         });
         
-        // Processa resultado "Orçamento"
-        orcamentoData = resOrc || null;
-        
-        // Renderiza tudo
         scheduleRender();
     }
 
     // ---------- INICIALIZAÇÃO ----------
-    document.addEventListener(\'DOMContentLoaded\', () => {
+    document.addEventListener('DOMContentLoaded', () => {
         UIElements.inputData.value = hojeLocalISO();
         inicializarCheckboxesLojas();
         
-        UIElements.form.addEventListener(\'submit\', (e) => {
+        UIElements.form.addEventListener('submit', (e) => {
             e.preventDefault();
             iniciarCarregamento();
         });
-        UIElements.selectPeriodo.addEventListener(\'change\', scheduleRender);
 
         iniciarCarregamento();
     });
