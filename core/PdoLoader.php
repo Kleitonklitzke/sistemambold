@@ -3,31 +3,30 @@
 final class PdoLoader
 {
     /**
-     * Carrega a conexão PDO de uma loja a partir do arquivo <loja>/conexaopdo.php.
+     * Carrega a conexão PDO de uma loja a partir da configuração centralizada.
      *
      * @throws RuntimeException
      */
     public static function fromLojaId(string $lojaId): PDO
     {
-        $path = LojaConfig::path($lojaId);
-        $file = __DIR__ . '/../' . $path . '/conexaopdo.php';
-        if (!is_file($file)) {
-            throw new RuntimeException('Arquivo de conexão não encontrado: ' . $file);
+        $dbConfig = LojaConfig::db($lojaId);
+
+        if ($dbConfig === null) {
+            throw new RuntimeException('Configuração de banco de dados não encontrada para a loja: ' . $lojaId);
         }
 
-        // Isola o include para não vazar variáveis para o escopo global.
-        $pdo = (static function (string $filePath) {
-            $con = null;
-            require $filePath; // deve definir $con (PDO)
-            if (!$con instanceof PDO) {
-                throw new RuntimeException('conexaopdo.php não retornou um PDO válido.');
-            }
-            return $con;
-        })($file);
+        $dsn = sprintf('mysql:host=%s;dbname=%s', $dbConfig['host'], $dbConfig['dbname']);
+
+        try {
+            $pdo = new PDO($dsn, $dbConfig['user'], $dbConfig['password']);
+        } catch (PDOException $e) {
+            throw new RuntimeException('Não foi possível conectar com o servidor de ' . LojaConfig::label($lojaId), 0, $e);
+        }
 
         // Configurações seguras
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
         return $pdo;
     }
 }
